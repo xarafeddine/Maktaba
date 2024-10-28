@@ -15,7 +15,6 @@ func (app *application) healthcheckHandler(w http.ResponseWriter, r *http.Reques
 
 	err := app.writeJSON(w, http.StatusOK, env, nil)
 	if err != nil {
-		// Use the new serverErrorResponse() helper.
 		app.serverErrorResponse(w, r, err)
 	}
 }
