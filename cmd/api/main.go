@@ -13,9 +13,9 @@ import (
 	"sync"
 	"time"
 
-	"greenlight.alexedwards.net/internal/data"
-	"greenlight.alexedwards.net/internal/mailer"
-	"greenlight.alexedwards.net/internal/vcs"
+	"myMovieApi.xaraf.net/internal/data"
+	"myMovieApi.xaraf.net/internal/mailer"
+	"myMovieApi.xaraf.net/internal/vcs"
 
 	_ "github.com/lib/pq"
 )
@@ -79,7 +79,7 @@ func main() {
 	flag.IntVar(&cfg.smtp.port, "smtp-port", 25, "SMTP port")
 	flag.StringVar(&cfg.smtp.username, "smtp-username", "a7420fc0883489", "SMTP username")
 	flag.StringVar(&cfg.smtp.password, "smtp-password", "e75ffd0a3aa5ec", "SMTP password")
-	flag.StringVar(&cfg.smtp.sender, "smtp-sender", "Greenlight <no-reply@greenlight.alexedwards.net>", "SMTP sender")
+	flag.StringVar(&cfg.smtp.sender, "smtp-sender", "Greenlight <no-reply@myMovieApi.xaraf.net>", "SMTP sender")
 
 	flag.Func("cors-trusted-origins", "Trusted CORS origins (space separated)", func(val string) error {
 		cfg.cors.trustedOrigins = strings.Fields(val)

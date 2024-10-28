@@ -8,7 +8,7 @@ import (
 	"encoding/base32"
 	"time"
 
-	"greenlight.alexedwards.net/internal/validator"
+	"myMovieApi.xaraf.net/internal/validator"
 )
 
 const (

@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"greenlight.alexedwards.net/internal/validator"
+	"myMovieApi.xaraf.net/internal/validator"
 
 	"github.com/julienschmidt/httprouter"
 )

@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"time"
 
-	"greenlight.alexedwards.net/internal/validator"
+	"myMovieApi.xaraf.net/internal/validator"
 
 	"github.com/lib/pq"
 )

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"greenlight.alexedwards.net/internal/data"
-	"greenlight.alexedwards.net/internal/validator"
+	"myMovieApi.xaraf.net/internal/data"
+	"myMovieApi.xaraf.net/internal/validator"
 )
 
 func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Request) {

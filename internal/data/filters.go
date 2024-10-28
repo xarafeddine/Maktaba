@@ -3,7 +3,7 @@ package data
 import (
 	"strings"
 
-	"greenlight.alexedwards.net/internal/validator"
+	"myMovieApi.xaraf.net/internal/validator"
 )
 
 type Filters struct {
