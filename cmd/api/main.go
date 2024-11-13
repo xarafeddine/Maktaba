@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"sync"
+
 	// New import
 	"database/sql" // New import
 	"flag"
@@ -51,6 +53,7 @@ type application struct {
 	logger *slog.Logger
 	models data.Models
 	mailer mailer.Mailer
+	wg     sync.WaitGroup
 }
 
 func main() {
