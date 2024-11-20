@@ -20,6 +20,13 @@ var (
 // using the json:"-" struct tag to prevent the Password and Version fields appearing in
 // any output when we encode it to JSON. Also notice that the Password field uses the
 // custom password type defined below.
+
+var AnonymousUser = &User{}
+
+func (u *User) IsAnonymous() bool {
+	return u == AnonymousUser
+}
+
 type User struct {
 	ID        int64     `json:"id"`
 	CreatedAt time.Time `json:"created_at"`
