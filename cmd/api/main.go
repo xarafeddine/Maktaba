@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"strings"
 	"sync"
 
 	// New import
@@ -46,6 +47,10 @@ type config struct {
 		password string
 		sender   string
 	}
+
+	cors struct {
+		trustedOrigins []string
+	}
 }
 
 type application struct {
@@ -79,6 +84,11 @@ func main() {
 	flag.StringVar(&cfg.smtp.username, "smtp-username", "4e3551a4626f7d", "SMTP username")
 	flag.StringVar(&cfg.smtp.password, "smtp-password", "ddc7663607d15f", "SMTP password")
 	flag.StringVar(&cfg.smtp.sender, "smtp-sender", "MyMovieApi <no-reply@mymovieapi.xaraf.net>", "SMTP sender")
+
+	flag.Func("cors-trusted-origins", "Trusted CORS origins (space separated)", func(val string) error {
+		cfg.cors.trustedOrigins = strings.Fields(val)
+		return nil
+	})
 
 	flag.Parse()
 
