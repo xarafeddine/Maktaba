@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"expvar"
+	"runtime"
 	"strings"
 	"sync"
 
@@ -108,6 +110,21 @@ func main() {
 	// Also log a message to say that the connection pool has been successfully
 	// established.
 	logger.Info("database connection pool established")
+
+	expvar.NewString("version").Set(version)
+
+	// Publish the number of active goroutines.
+	expvar.Publish("goroutines", expvar.Func(func() any {
+		return runtime.NumGoroutine()
+	}))
+	// Publish the database connection pool statistics.
+	expvar.Publish("database", expvar.Func(func() any {
+		return db.Stats()
+	}))
+	// Publish the current Unix timestamp.
+	expvar.Publish("timestamp", expvar.Func(func() any {
+		return time.Now().Unix()
+	}))
 
 	app := &application{
 		config: cfg,
