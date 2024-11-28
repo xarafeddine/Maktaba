@@ -19,8 +19,8 @@ import (
 	// package. Note that we alias this import to the blank identifier, to stop the Go
 	// compiler complaining that the package isn't being used.
 	_ "github.com/lib/pq"
-	"myMovieApi.xaraf.net/internal/data"
-	"myMovieApi.xaraf.net/internal/mailer"
+	"github.com/xarafeddine/maktaba/internal/data"
+	"github.com/xarafeddine/maktaba/internal/mailer"
 )
 
 const version = "1.0.0"
@@ -86,7 +86,7 @@ func main() {
 	flag.IntVar(&cfg.smtp.port, "smtp-port", 2525, "SMTP port")
 	flag.StringVar(&cfg.smtp.username, "smtp-username", "4e3551a4626f7d", "SMTP username")
 	flag.StringVar(&cfg.smtp.password, "smtp-password", "ddc7663607d15f", "SMTP password")
-	flag.StringVar(&cfg.smtp.sender, "smtp-sender", "MyMovieApi <no-reply@mymovieapi.xaraf.net>", "SMTP sender")
+	flag.StringVar(&cfg.smtp.sender, "smtp-sender", "Maktaba <no-reply@github.com/xarafeddine/maktaba>", "SMTP sender")
 
 	flag.Func("cors-trusted-origins", "Trusted CORS origins (space separated)", func(val string) error {
 		cfg.cors.trustedOrigins = strings.Fields(val)

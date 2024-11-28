@@ -8,7 +8,7 @@ import (
 	"encoding/base32"
 	"time"
 
-	"myMovieApi.xaraf.net/internal/validator"
+	"github.com/xarafeddine/maktaba/internal/validator"
 )
 
 const (

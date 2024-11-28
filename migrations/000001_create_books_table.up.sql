@@ -1,11 +1,11 @@
-GRANT CREATE ON DATABASE greenlight TO greenlight;
-ALTER DATABASE greenlight OWNER TO greenlight;
-CREATE TABLE IF NOT EXISTS movies (
+GRANT CREATE ON DATABASE maktaba TO maktaba;
+ALTER DATABASE maktaba OWNER TO maktaba;
+CREATE TABLE IF NOT EXISTS books (
     id bigserial PRIMARY KEY,
     created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
     title text NOT NULL,
     year integer NOT NULL,
-    runtime integer NOT NULL,
+    page_count integer NOT NULL,
     genres text [] NOT NULL,
     version integer NOT NULL DEFAULT 1
 );

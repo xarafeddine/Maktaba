@@ -11,9 +11,9 @@ import (
 	"time"
 
 	"github.com/tomasen/realip"
+	"github.com/xarafeddine/maktaba/internal/data"
+	"github.com/xarafeddine/maktaba/internal/validator"
 	"golang.org/x/time/rate"
-	"myMovieApi.xaraf.net/internal/data"
-	"myMovieApi.xaraf.net/internal/validator"
 )
 
 func (app *application) recoverPanic(next http.Handler) http.Handler {

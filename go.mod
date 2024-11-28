@@ -1,4 +1,4 @@
-module myMovieApi.xaraf.net
+module github.com/xarafeddine/maktaba
 
 go 1.23.1
 

@@ -3,7 +3,7 @@ package data
 import (
 	"strings"
 
-	"myMovieApi.xaraf.net/internal/validator"
+	"github.com/xarafeddine/maktaba/internal/validator"
 )
 
 type Metadata struct {

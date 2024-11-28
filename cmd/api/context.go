@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"myMovieApi.xaraf.net/internal/data"
+	"github.com/xarafeddine/maktaba/internal/data"
 )
 
 // Define a custom contextKey type, with the underlying type string.

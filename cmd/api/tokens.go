@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	"myMovieApi.xaraf.net/internal/data"
-	"myMovieApi.xaraf.net/internal/validator"
+	"github.com/xarafeddine/maktaba/internal/data"
+	"github.com/xarafeddine/maktaba/internal/validator"
 )
 
 func (app *application) createAuthenticationTokenHandler(w http.ResponseWriter, r *http.Request) {

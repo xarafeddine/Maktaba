@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"net/http"
 
-	"myMovieApi.xaraf.net/internal/data"
-	"myMovieApi.xaraf.net/internal/validator"
+	"github.com/xarafeddine/maktaba/internal/data"
+	"github.com/xarafeddine/maktaba/internal/validator"
 )
 
-func (app *application) listMoviesHandler(w http.ResponseWriter, r *http.Request) {
+func (app *application) listBooksHandler(w http.ResponseWriter, r *http.Request) {
 	// To keep things consistent with our other handlers, we'll define an input struct
 	// to hold the expected values from the request query string.
 	var input struct {
@@ -32,11 +32,11 @@ func (app *application) listMoviesHandler(w http.ResponseWriter, r *http.Request
 	input.Page = app.readInt(qs, "page", 1, v)
 	input.PageSize = app.readInt(qs, "page_size", 20, v)
 	// Extract the sort query string value, falling back to "id" if it is not provided
-	// by the client (which will imply a ascending sort on movie ID).
+	// by the client (which will imply a ascending sort on book ID).
 	input.Sort = app.readString(qs, "sort", "id")
 
 	// Add the supported sort values for this endpoint to the sort safelist.
-	input.Filters.SortSafelist = []string{"id", "title", "year", "runtime", "-id", "-title", "-year", "-runtime"}
+	input.Filters.SortSafelist = []string{"id", "title", "year", "pageCount", "-id", "-title", "-year", "-pageCount"}
 	// Execute the validation checks on the Filters struct and send a response
 	// containing the errors if necessary.
 	if data.ValidateFilters(v, input.Filters); !v.Valid() {
@@ -44,27 +44,27 @@ func (app *application) listMoviesHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	// Call the GetAll() method to retrieve the movies, passing in the various filter
+	// Call the GetAll() method to retrieve the books, passing in the various filter
 	// parameters.
 	// Accept the metadata struct as a return value.
-	movies, metadata, err := app.models.Movies.GetAll(input.Title, input.Genres, input.Filters)
+	books, metadata, err := app.models.Books.GetAll(input.Title, input.Genres, input.Filters)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
 	}
 	// Include the metadata in the response envelope.
-	err = app.writeJSON(w, http.StatusOK, envelope{"movies": movies, "metadata": metadata}, nil)
+	err = app.writeJSON(w, http.StatusOK, envelope{"books": books, "metadata": metadata}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
 }
 
-func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Request) {
+func (app *application) createBookHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
-		Title   string       `json:"title"`
-		Year    int32        `json:"year"`
-		Runtime data.Runtime `json:"runtime"`
-		Genres  []string     `json:"genres"`
+		Title     string   `json:"title"`
+		Year      int32    `json:"year"`
+		PageCount int32    `json:"pageCount"`
+		Genres    []string `json:"genres"`
 	}
 	err := app.readJSON(w, r, &input)
 	if err != nil {
@@ -72,27 +72,27 @@ func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	// Copy the values from the input struct to a new Movie struct.
-	movie := &data.Movie{
-		Title:   input.Title,
-		Year:    input.Year,
-		Runtime: input.Runtime,
-		Genres:  input.Genres,
+	// Copy the values from the input struct to a new Book struct.
+	book := &data.Book{
+		Title:     input.Title,
+		Year:      input.Year,
+		PageCount: input.PageCount,
+		Genres:    input.Genres,
 	}
 
 	// Initialize a new Validator.
 	v := validator.New()
-	// Call the ValidateMovie() function and return a response containing the errors if
+	// Call the ValidateBook() function and return a response containing the errors if
 	// any of the checks fail.
-	if data.ValidateMovie(v, movie); !v.Valid() {
+	if data.ValidateBook(v, book); !v.Valid() {
 		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
 
-	// Call the Insert() method on our movies model, passing in a pointer to the
-	// validated movie struct. This will create a record in the database and update the
-	// movie struct with the system-generated information.
-	err = app.models.Movies.Insert(movie)
+	// Call the Insert() method on our books model, passing in a pointer to the
+	// validated book struct. This will create a record in the database and update the
+	// book struct with the system-generated information.
+	err = app.models.Books.Insert(book)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
@@ -100,19 +100,19 @@ func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Reques
 	// When sending a HTTP response, we want to include a Location header to let the
 	// client know which URL they can find the newly-created resource at. We make an
 	// empty http.Header map and then use the Set() method to add a new Location header,
-	// interpolating the system-generated ID for our new movie in the URL.
+	// interpolating the system-generated ID for our new book in the URL.
 	headers := make(http.Header)
-	headers.Set("Location", fmt.Sprintf("/v1/movies/%d", movie.ID))
-	// Write a JSON response with a 201 Created status code, the movie data in the
+	headers.Set("Location", fmt.Sprintf("/v1/books/%d", book.ID))
+	// Write a JSON response with a 201 Created status code, the book data in the
 	// response body, and the Location header.
-	err = app.writeJSON(w, http.StatusCreated, envelope{"movie": movie}, headers)
+	err = app.writeJSON(w, http.StatusCreated, envelope{"book": book}, headers)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
 
 }
 
-func (app *application) showMovieHandler(w http.ResponseWriter, r *http.Request) {
+func (app *application) showBookHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := app.readIDParam(r)
 	if err != nil {
 		// Use the new notFoundResponse() helper.
@@ -120,7 +120,7 @@ func (app *application) showMovieHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	movie, err := app.models.Movies.Get(id)
+	book, err := app.models.Books.Get(id)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):
@@ -130,7 +130,7 @@ func (app *application) showMovieHandler(w http.ResponseWriter, r *http.Request)
 		}
 		return
 	}
-	err = app.writeJSON(w, http.StatusOK, envelope{"movie": movie}, nil)
+	err = app.writeJSON(w, http.StatusOK, envelope{"book": book}, nil)
 
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
@@ -138,7 +138,7 @@ func (app *application) showMovieHandler(w http.ResponseWriter, r *http.Request)
 
 }
 
-func (app *application) updateMovieHandler(w http.ResponseWriter, r *http.Request) {
+func (app *application) updateBookHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := app.readIDParam(r)
 	if err != nil {
 		// Use the new notFoundResponse() helper.
@@ -146,7 +146,7 @@ func (app *application) updateMovieHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	movie, err := app.models.Movies.Get(id)
+	book, err := app.models.Books.Get(id)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):
@@ -158,10 +158,10 @@ func (app *application) updateMovieHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	type Input struct {
-		Title   *string       `json:"title"`
-		Year    *int32        `json:"year"`
-		Runtime *data.Runtime `json:"runtime"`
-		Genres  []string      `json:"genres"`
+		Title     *string  `json:"title"`
+		Year      *int32   `json:"year"`
+		PageCount *int32   `json:"pageCount"`
+		Genres    []string `json:"genres"`
 	}
 
 	var input Input
@@ -171,26 +171,26 @@ func (app *application) updateMovieHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	if input.Title != nil {
-		movie.Title = *input.Title
+		book.Title = *input.Title
 	}
 	// We also do the same for the other fields in the input struct.
 	if input.Year != nil {
-		movie.Year = *input.Year
+		book.Year = *input.Year
 	}
-	if input.Runtime != nil {
-		movie.Runtime = *input.Runtime
+	if input.PageCount != nil {
+		book.PageCount = *input.PageCount
 	}
 	if input.Genres != nil {
-		movie.Genres = input.Genres // Note that we don't need to dereference a slice.
+		book.Genres = input.Genres // Note that we don't need to dereference a slice.
 	}
 
 	v := validator.New()
-	if data.ValidateMovie(v, movie); !v.Valid() {
+	if data.ValidateBook(v, book); !v.Valid() {
 		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
 
-	err = app.models.Movies.Update(movie)
+	err = app.models.Books.Update(book)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrEditConflict):
@@ -201,23 +201,23 @@ func (app *application) updateMovieHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"movie": movie}, nil)
+	err = app.writeJSON(w, http.StatusOK, envelope{"book": book}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
 
 }
 
-func (app *application) deleteMovieHandler(w http.ResponseWriter, r *http.Request) {
-	// Extract the movie ID from the URL.
+func (app *application) deleteBookHandler(w http.ResponseWriter, r *http.Request) {
+	// Extract the book ID from the URL.
 	id, err := app.readIDParam(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
 	}
-	// Delete the movie from the database, sending a 404 Not Found response to the
+	// Delete the book from the database, sending a 404 Not Found response to the
 	// client if there isn't a matching record.
-	err = app.models.Movies.Delete(id)
+	err = app.models.Books.Delete(id)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):
@@ -228,7 +228,7 @@ func (app *application) deleteMovieHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	// Return a 200 OK status code along with a success message.
-	err = app.writeJSON(w, http.StatusOK, envelope{"message": "movie successfully deleted"}, nil)
+	err = app.writeJSON(w, http.StatusOK, envelope{"message": "book successfully deleted"}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}

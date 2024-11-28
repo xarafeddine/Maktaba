@@ -1,98 +1,152 @@
-# MyMovieApi
+# 📚 Maktaba - Book Management API
 
-MyMovieApi is a JSON API written in Go for retrieving and managing information about movies. The core functionality is inspired by the Open Movie Database API, providing endpoints for CRUD operations on movie data, user management, and authentication. It is designed to serve as the backend for applications that need movie data and user authentication.
+## 🌟 Overview
 
-## Features
+Maktaba is a robust, production-ready Book Management API built with Go, offering comprehensive features for book catalog management, user authentication, and system integration.
 
-- Retrieve movie information
-- Create, update, and delete movie entries
-- User registration and management
-- User authentication with token-based login
-- Health check and monitoring endpoints
+## 🚀 Features
 
-## Endpoints
+- **Book Management**
 
-The following endpoints and actions are supported:
+  - Create, read, update, and delete book entries
+  - Flexible book information storage
+  - Advanced filtering and search capabilities
 
-### Health Check
+- **User Authentication**
 
-| Method | URL Pattern       | Action                                   |
-| ------ | ----------------- | ---------------------------------------- |
-| GET    | `/v1/healthcheck` | Show application health and version info |
+  - Secure user registration
+  - Token-based authentication
+  - Role-based access control
 
-### Movie Endpoints
+- **Performance & Security**
+  - Rate limiting
+  - CORS support
+  - Connection pooling for database
+  - Environment-specific configurations
 
-| Method | URL Pattern      | Action                                 |
-| ------ | ---------------- | -------------------------------------- |
-| GET    | `/v1/movies`     | Show details of all movies             |
-| POST   | `/v1/movies`     | Create a new movie                     |
-| GET    | `/v1/movies/:id` | Show details of a specific movie       |
-| PATCH  | `/v1/movies/:id` | Update the details of a specific movie |
-| DELETE | `/v1/movies/:id` | Delete a specific movie                |
+## 🛠 Tech Stack
 
-### User Endpoints
+- **Language**: Go (Golang)
+- **Database**: PostgreSQL
+- **Authentication**: Statfull token based auth
 
-| Method | URL Pattern           | Action                   |
-| ------ | --------------------- | ------------------------ |
-| POST   | `/v1/users`           | Register a new user      |
-| PUT    | `/v1/users/activated` | Activate a specific user |
-| PUT    | `/v1/users/password`  | Update a user's password |
+## 📡 API Endpoints
 
-### Authentication Endpoints
+### Books
 
-| Method | URL Pattern                 | Action                              |
-| ------ | --------------------------- | ----------------------------------- |
-| POST   | `/v1/tokens/authentication` | Generate a new authentication token |
-| POST   | `/v1/tokens/password-reset` | Generate a new password-reset token |
+| Method | Endpoint        | Description            | Permission    |
+| ------ | --------------- | ---------------------- | ------------- |
+| GET    | `/v1/books`     | List all books         | `books:read`  |
+| POST   | `/v1/books`     | Create a new book      | `books:write` |
+| GET    | `/v1/books/:id` | Retrieve specific book | `books:read`  |
+| PATCH  | `/v1/books/:id` | Update a book          | `books:write` |
+| DELETE | `/v1/books/:id` | Delete a book          | `books:write` |
 
-### Debugging & Metrics
+### Authentication
 
-| Method | URL Pattern   | Action                      |
-| ------ | ------------- | --------------------------- |
-| GET    | `/debug/vars` | Display application metrics |
+| Method | Endpoint                    | Description           |
+| ------ | --------------------------- | --------------------- |
+| POST   | `/v1/users`                 | Register new user     |
+| PUT    | `/v1/users/activated`       | Activate user account |
+| POST   | `/v1/tokens/authentication` | Generate auth token   |
 
-## Setup and Installation
+## 🔧 Configuration
 
-1. Clone the repository:
+### Environment Variables
 
-   ```bash
-   git clone https://github.com/yourusername/mymovieapi.git
-   ```
+| Variable      | Description                  | Default       |
+| ------------- | ---------------------------- | ------------- |
+| `DB_DSN`      | PostgreSQL connection string | Required      |
+| `SERVER_PORT` | API server port              | `4000`        |
+| `ENV_MODE`    | Environment mode             | `development` |
 
-2. Navigate into the project directory:
-
-   ```bash
-   cd mymovieapi
-   ```
-
-3. Install dependencies:
-
-   ```bash
-   go mod tidy
-   ```
-
-4. Run the application:
-   ```bash
-   go run main.go
-   ```
-
-## Configuration
-
-The application reads configuration values from command-line flags. Here are the available flags:
-
-| Flag                 | Description                                    |
-| -------------------- | ---------------------------------------------- |
-| `-db-dsn`            | PostgreSQL DSN                                 |
-| `-db-max-idle-conns` | PostgreSQL max idle connections                |
-| `-db-max-idle-time`  | PostgreSQL max connection idle time            |
-| `-db-max-open-conns` | PostgreSQL max open connections                |
-| `-env`               | Environment (development, staging, production) |
-| `-port`              | API server port                                |
-
-### Example
-
-To run the application with custom configuration, use the following command:
+### Command Line Flags
 
 ```bash
-go run main.go -db-dsn="your-dsn" -port=8080 -env=production
+go run main.go \
+  -db-dsn="postgres://username:password@localhost/dbname" \
+  -port=4000 \
+  -env=production
 ```
+
+## 📦 Installation
+
+### Prerequisites
+
+- Go 1.22+
+- PostgreSQL 12+
+- Git
+
+### Setup Steps
+
+1. Clone the repository
+
+```bash
+git clone https://github.com/xarafeddine/maktaba.git
+cd maktaba
+```
+
+2. Install dependencies
+
+```bash
+go mod tidy
+# or
+make audit
+```
+
+3. Set up PostgreSQL database
+
+```bash
+# Create database
+CREATE DATABASE maktaba;
+
+# Create necessary tables using migrations
+make db/migrate/up
+```
+
+4. Run the application
+
+```bash
+go run ./cmd/api -db-dsn=${MAKTABA_DB_DSN}
+# or
+make run/api
+```
+
+## 🧪 Testing
+
+Run unit and integration tests:
+
+```bash
+go test ./...
+```
+
+## 📊 Monitoring
+
+- Prometheus metrics endpoint
+- Expvar debugging endpoint at `/debug/vars`
+
+## 🔒 Security Features
+
+- Token based authentication
+- Role-based access control
+- Rate limiting
+- CORS protection
+- Secure password hashing
+
+## 📝 Logging
+
+- Structured logging
+- Log levels: INFO, WARN, ERROR
+- Configurable log output
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📄 License
+
+Distributed under the MIT License. See `LICENSE` for more information.
