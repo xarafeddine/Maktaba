@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: maktaba-api-deployment
+  labels:
+    app: maktaba-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: maktaba-api
+  template:
+    metadata:
+      labels:
+        app: maktaba-api
+    spec:
+      initContainers:
+        - name: migrations
+          image: migrate/migrate
+          args: 
+            - "-path"
+            - "/migrations"
+            - "-database"
+            - "$(DB_DSN)"
+            - "up"
+          env:
+            - name: DB_DSN
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: DB_DSN
+          volumeMounts:
+            - name: migrations
+              mountPath: /migrations
+      containers:
+        - name: maktaba-api
+          image: maktaba-api:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 4000
+          env:
+            - name: DB_DSN
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: DB_DSN
+          readinessProbe:
+            httpGet:
+              path: /v1/healthcheck
+              port: 4000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /v1/healthcheck
+              port: 4000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+      volumes:
+        - name: migrations
+          configMap:
+            name: migrations-config

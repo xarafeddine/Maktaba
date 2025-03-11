@@ -112,6 +112,149 @@ go run ./cmd/api -db-dsn=${MAKTABA_DB_DSN}
 make run/api
 ```
 
+## 🐳 Docker Setup
+
+### Prerequisites
+
+- Docker 20.10+
+
+### Running with Docker
+
+1. Create a Docker network:
+```bash
+docker network create maktaba-net
+```
+
+2. Start the PostgreSQL container:
+```bash
+docker run -d \
+  --name maktaba-db \
+  --network maktaba-net \
+  -e POSTGRES_DB=maktaba \
+  -e POSTGRES_USER=maktaba \
+  -e POSTGRES_PASSWORD=secret \
+  -p 5432:5432 \
+  postgres:15-alpine
+```
+
+3. Build and run the API container:
+```bash
+# Build the image
+docker build -t maktaba-api .
+
+# Run the container
+docker run -d \
+  --name maktaba-api \
+  --network maktaba-net \
+  -e DB_DSN=postgres://maktaba:secret@maktaba-db:5432/maktaba?sslmode=disable \
+  -p 4000:4000 \
+  maktaba-api
+```
+
+The migrations will run automatically when the container starts. You can check the migration status with:
+```bash
+docker logs maktaba-api
+```
+
+### Useful Docker Commands
+
+```bash
+# View container logs
+docker logs maktaba-api
+docker logs maktaba-db
+
+# Check container status
+docker ps
+
+# Enter container shell
+docker exec -it maktaba-api sh
+docker exec -it maktaba-db psql -U maktaba
+
+# Stop containers
+docker stop maktaba-api maktaba-db
+
+# Remove containers
+docker rm maktaba-api maktaba-db
+```
+
+The API will be accessible at `http://localhost:4000`
+
+## 🎡 Kubernetes Deployment
+
+### Prerequisites
+- Minikube
+- kubectl
+- Docker
+
+### Deployment Steps
+
+1. Start Minikube:
+```bash
+minikube start
+```
+
+2. Enable Minikube addons:
+```bash
+minikube addons enable ingress
+```
+
+3. Point shell to minikube's docker-daemon:
+```bash
+eval $(minikube docker-env)
+```
+
+4. Build the Docker image:
+```bash
+docker build -t maktaba-api:latest .
+```
+
+5. Create Kubernetes resources:
+```bash
+# Create ConfigMap from migrations folder
+kubectl create configmap migrations-config --from-file=../migrations/
+
+# Create ConfigMap and Secret
+kubectl apply -f k8s/postgres-config.yaml
+kubectl apply -f k8s/postgres-secret.yaml
+
+# Create PostgreSQL deployment and service
+kubectl apply -f k8s/postgres-deployment.yaml
+kubectl apply -f k8s/postgres-service.yaml
+
+# Create API deployment and service
+kubectl apply -f k8s/maktaba-api-deployment.yaml
+kubectl apply -f k8s/maktaba-api-service.yaml
+```
+
+6. Verify deployment:
+```bash
+kubectl get pods
+kubectl get services
+kubectl get deployments
+```
+
+7. Access the application:
+```bash
+minikube service maktaba-api-service --url
+```
+
+### Useful Kubernetes Commands
+
+```bash
+# View logs
+kubectl logs deployment/maktaba-api-deployment
+
+# Scale deployment
+kubectl scale deployment maktaba-api-deployment --replicas=3
+
+# Describe resources
+kubectl describe pod <pod-name>
+kubectl describe service maktaba-api-service
+
+# Delete resources
+kubectl delete -f k8s/
+```
+
 ## 🧪 Testing
 
 Run unit and integration tests:

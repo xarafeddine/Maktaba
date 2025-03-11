@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: migrations-config
+data:
+  "000001_create_books_table.up.sql": |
+    GRANT CREATE ON DATABASE maktaba TO maktaba;
+    ALTER DATABASE maktaba OWNER TO maktaba;
+    CREATE TABLE IF NOT EXISTS books (
+        id bigserial PRIMARY KEY,
+        created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
+        title text NOT NULL,
+        year integer NOT NULL,
+        page_count integer NOT NULL,
+        genres text [] NOT NULL,
+        version integer NOT NULL DEFAULT 1
+    );
+  "000002_add_books_check_constraints.up.sql": |
+    ALTER TABLE books
+    ADD CONSTRAINT books_page_count_check CHECK (page_count >= 0);
+    ALTER TABLE books
+    ADD CONSTRAINT books_year_check CHECK (
+            year BETWEEN 0 AND date_part('year', now())
+        );
+    ALTER TABLE books
+    ADD CONSTRAINT genres_length_check CHECK (
+            array_length(genres, 1) BETWEEN 1 AND 5
+        );
+  "000003_add_books_indexes.up.sql": |
+    CREATE INDEX IF NOT EXISTS books_title_idx ON books USING GIN (to_tsvector('simple', title));
+    CREATE INDEX IF NOT EXISTS books_genres_idx ON books USING GIN (genres);
+  "000006_add_permissions.up.sql": |
+    CREATE TABLE IF NOT EXISTS permissions (id bigserial PRIMARY KEY, code text NOT NULL);
+    CREATE TABLE IF NOT EXISTS users_permissions (
+        user_id bigint NOT NULL REFERENCES users ON DELETE CASCADE,
+        permission_id bigint NOT NULL REFERENCES permissions ON DELETE CASCADE,
+        PRIMARY KEY (user_id, permission_id)
+    );
+    INSERT INTO permissions (code)
+    VALUES ('books:read'),
+        ('books:write');
