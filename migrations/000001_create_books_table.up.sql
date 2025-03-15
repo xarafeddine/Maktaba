@@ -1,4 +1,5 @@
-GRANT CREATE ON DATABASE maktaba TO maktaba;
+-- GRANT CREATE ON DATABASE maktaba TO maktaba;
+CREATE EXTENSION IF NOT EXISTS citext;
 ALTER DATABASE maktaba OWNER TO maktaba;
 CREATE TABLE IF NOT EXISTS books (
     id bigserial PRIMARY KEY,

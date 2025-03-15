@@ -54,26 +54,24 @@ Maktaba is a robust, production-ready Book Management API built with Go, offerin
 
 ### Environment Variables
 
-| Variable      | Description                  | Default       |
-| ------------- | ---------------------------- | ------------- |
-| `DB_DSN`      | PostgreSQL connection string | Required      |
-| `SERVER_PORT` | API server port              | `4000`        |
-| `ENV_MODE`    | Environment mode             | `development` |
+| Variable   | Description                  | Default       |
+| ---------- | ---------------------------- | ------------- |
+| `DB_DSN`   | PostgreSQL connection string | Required      |
+| `PORT`     | API server port              | `4000`        |
+| `ENV_MODE` | Environment mode             | `development` |
 
 ### Command Line Flags
 
 ```bash
-go run main.go \
-  -db-dsn="postgres://username:password@localhost/dbname" \
-  -port=4000 \
-  -env=production
+go run ./cmd/api -db-dsn="postgres://maktaba:maktaba@localhost:5432/maktaba?sslmode=disable" -port=4000
+
 ```
 
 ## 📦 Installation
 
 ### Prerequisites
 
-- Go 1.22+
+- Go 1.23+
 - PostgreSQL 12+
 - Git
 
@@ -94,20 +92,46 @@ go mod tidy
 make audit
 ```
 
-3. Set up PostgreSQL database
+## Local Setup
+
+### Database Setup
+
+Set up PostgreSQL database
+
+1. Connect to PostgreSQL:
 
 ```bash
-# Create database
-CREATE DATABASE maktaba;
+psql -h localhost -p 5432 -U postgres -W
+```
 
-# Create necessary tables using migrations
-make db/migrate/up
+2. Create and configure database:
+
+```sql
+CREATE DATABASE maktaba;
+\c maktaba
+CREATE ROLE maktaba WITH LOGIN PASSWORD 'maktaba';
+CREATE EXTENSION IF NOT EXISTS citext;
+ALTER DATABASE maktaba OWNER TO maktaba;
+```
+
+### Migrations
+
+1. Install migration tool:
+
+```bash
+go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+```
+
+2. Run migrations:
+
+```bash
+migrate -path=./migrations -database="postgres://maktaba:maktaba@localhost:5432/maktaba?sslmode=disable" up
 ```
 
 4. Run the application
 
 ```bash
-go run ./cmd/api -db-dsn=${MAKTABA_DB_DSN}
+go run ./cmd/api -db-dsn=${DB_DSN}
 # or
 make run/api
 ```
@@ -121,28 +145,32 @@ make run/api
 ### Running with Docker
 
 1. Create a Docker network:
+
 ```bash
 docker network create maktaba-net
 ```
 
 2. Start the PostgreSQL container:
+
 ```bash
-docker run -d \
-  --name maktaba-db \
+docker run --rm --name maktaba-db \
   --network maktaba-net \
   -e POSTGRES_DB=maktaba \
   -e POSTGRES_USER=maktaba \
-  -e POSTGRES_PASSWORD=secret \
-  -p 5432:5432 \
+  -e POSTGRES_PASSWORD=maktaba \
   postgres:15-alpine
 ```
 
-3. Build and run the API container:
+3. Build the image
+
 ```bash
 # Build the image
 docker build -t maktaba-api .
+```
 
-# Run the container
+4. run the API container:
+
+```bash
 docker run -d \
   --name maktaba-api \
   --network maktaba-net \
@@ -151,7 +179,18 @@ docker run -d \
   maktaba-api
 ```
 
+or
+
+```bash
+docker run -it --rm --name maktaba-api \
+  --network maktaba-net \
+  -p 4000:4000 \
+  --env-file .env \
+  maktaba-api
+```
+
 The migrations will run automatically when the container starts. You can check the migration status with:
+
 ```bash
 docker logs maktaba-api
 ```
@@ -182,6 +221,7 @@ The API will be accessible at `http://localhost:4000`
 ## 🎡 Kubernetes Deployment
 
 ### Prerequisites
+
 - Minikube
 - kubectl
 - Docker
@@ -189,26 +229,31 @@ The API will be accessible at `http://localhost:4000`
 ### Deployment Steps
 
 1. Start Minikube:
+
 ```bash
 minikube start
 ```
 
 2. Enable Minikube addons:
+
 ```bash
 minikube addons enable ingress
 ```
 
 3. Point shell to minikube's docker-daemon:
+
 ```bash
 eval $(minikube docker-env)
 ```
 
 4. Build the Docker image:
+
 ```bash
 docker build -t maktaba-api:latest .
 ```
 
 5. Create Kubernetes resources:
+
 ```bash
 # Create ConfigMap from migrations folder
 kubectl create configmap migrations-config --from-file=../migrations/
@@ -227,6 +272,7 @@ kubectl apply -f k8s/maktaba-api-service.yaml
 ```
 
 6. Verify deployment:
+
 ```bash
 kubectl get pods
 kubectl get services
@@ -234,6 +280,7 @@ kubectl get deployments
 ```
 
 7. Access the application:
+
 ```bash
 minikube service maktaba-api-service --url
 ```
