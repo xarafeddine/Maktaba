@@ -220,87 +220,93 @@ The API will be accessible at `http://localhost:4000`
 
 ## 🎡 Kubernetes Deployment
 
-### Prerequisites
+## Prerequisites
 
-- Minikube
-- kubectl
 - Docker
+- Kubernetes (Minikube or similar)
+- kubectl
 
-### Deployment Steps
+## Setup and Deployment
 
-1. Start Minikube:
-
-```bash
-minikube start
-```
-
-2. Enable Minikube addons:
+1. **Build the Docker image**
 
 ```bash
-minikube addons enable ingress
-```
-
-3. Point shell to minikube's docker-daemon:
-
-```bash
-eval $(minikube docker-env)
-```
-
-4. Build the Docker image:
-
-```bash
+# Build the image
 docker build -t maktaba-api:latest .
 ```
 
-5. Create Kubernetes resources:
+2. **Load image into Minikube** (if using Minikube)
 
 ```bash
-# Create ConfigMap from migrations folder
-kubectl create configmap migrations-config --from-file=../migrations/
-
-# Create ConfigMap and Secret
-kubectl apply -f k8s/postgres-config.yaml
-kubectl apply -f k8s/postgres-secret.yaml
-
-# Create PostgreSQL deployment and service
-kubectl apply -f k8s/postgres-deployment.yaml
-kubectl apply -f k8s/postgres-service.yaml
-
-# Create API deployment and service
-kubectl apply -f k8s/maktaba-api-deployment.yaml
-kubectl apply -f k8s/maktaba-api-service.yaml
+minikube start
+minikube image load maktaba-api:latest
 ```
 
-6. Verify deployment:
+3. **Deploy to Kubernetes**
+
+```bash
+# Apply Kubernetes manifests in order
+kubectl apply -f k8s/configmap.yaml
+kubectl apply -f k8s/secret.yaml
+kubectl apply -f k8s/postgres.yaml
+kubectl apply -f k8s/api.yaml
+```
+
+4. **Verify deployment**
 
 ```bash
 kubectl get pods
 kubectl get services
-kubectl get deployments
 ```
 
-7. Access the application:
+## Cleanup
+
+To remove all deployed resources:
 
 ```bash
-minikube service maktaba-api-service --url
-```
-
-### Useful Kubernetes Commands
-
-```bash
-# View logs
-kubectl logs deployment/maktaba-api-deployment
-
-# Scale deployment
-kubectl scale deployment maktaba-api-deployment --replicas=3
-
-# Describe resources
-kubectl describe pod <pod-name>
-kubectl describe service maktaba-api-service
-
-# Delete resources
+# Delete all resources
 kubectl delete -f k8s/
+
+# Clean Docker
+docker system prune -f
 ```
+
+## Monitoring
+
+Check application logs:
+
+```bash
+kubectl logs -f deployment/maktaba-api
+kubectl logs -f deployment/maktaba-db
+```
+
+Access the service (Minikube):
+
+```bash
+minikube service maktaba-api
+```
+
+## Environment Variables
+
+The application uses the following environment variables:
+
+- POSTGRES_DB: Database name
+- POSTGRES_USER: Database user
+- POSTGRES_PASSWORD: Database password
+- DB_HOST: Database host
+- DB_PORT: Database port (5432)
+- DB_DSN: Database connection string
+- PORT: API port (4000)
+
+## Architecture
+
+- API Service: Go application running on port 4000
+- Database: PostgreSQL 15
+- Kubernetes Resources:
+  - ConfigMap: Non-sensitive configuration
+  - Secret: Sensitive data
+  - Deployments: API and PostgreSQL
+  - Services: LoadBalancer for API, ClusterIP for DB
 
 ## 🧪 Testing
 
