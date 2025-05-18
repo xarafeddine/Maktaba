@@ -2,6 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: maktaba-config
+  namespace: maktaba
 data:
   DB_HOST: maktaba-db
   DB_PORT: "5432"

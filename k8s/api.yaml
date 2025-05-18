@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: maktaba-api
+  namespace: maktaba
 spec:
   replicas: 2
   selector:
@@ -14,8 +15,13 @@ spec:
     spec:
       containers:
         - name: api
-          image: maktaba-api:latest
-          imagePullPolicy: Never
+          # to run localy
+          # image: maktaba-api:latest
+          # imagePullPolicy: Never
+
+          # to run on k8s (after building the image)
+          image: ghcr.io/xarafeddine/maktaba:latest
+          imagePullPolicy: Always
           envFrom:
             - configMapRef:
                 name: maktaba-config
@@ -28,6 +34,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: maktaba-api
+  namespace: maktaba
 spec:
   type: LoadBalancer
   selector:
